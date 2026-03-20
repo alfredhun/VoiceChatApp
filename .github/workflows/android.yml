@@ -3,8 +3,6 @@ name: Android CI/CD
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -16,6 +14,7 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Setup JDK
+      id: jdk
       uses: actions/setup-java@v4
       with:
         java-version: '17'
@@ -23,25 +22,26 @@ jobs:
     
     - name: Setup Android SDK
       run: |
-        mkdir -p $HOME/android-sdk/cmdline-tools
-        cd $HOME/android-sdk/cmdline-tools
+        ANDROID_SDK_ROOT="/opt/android-sdk"
+        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+        cd $ANDROID_SDK_ROOT/cmdline-tools
         wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
         unzip -q cmdline-tools.zip
         mv cmdline-tools latest
-        export ANDROID_HOME=$HOME/android-sdk
+        export ANDROID_HOME=$ANDROID_SDK_ROOT
         export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
-        yes | sdkmanager --licenses
+        yes | sdkmanager --licenses > /dev/null 2>&1
         sdkmanager "platforms;android-34" "build-tools;34.0.0"
-    
-    - name: Create local.properties
-      run: echo "sdk.dir=$HOME/android-sdk" > local.properties
+        echo "sdk.dir=$ANDROID_HOME" > $GITHUB_WORKSPACE/local.properties
+        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+        echo "JAVA_HOME=${{ steps.jdk.outputs.path }}" >> $GITHUB_ENV
+        cat $GITHUB_ENV
     
     - name: Build with Gradle
-      run: gradle assembleDebug --no-daemon
-      env:
-        ANDROID_HOME: $HOME/android-sdk
-        ANDROID_SDK_ROOT: $HOME/android-sdk
-        JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.9-9/x64
+      run: |
+        source $GITHUB_ENV
+        gradle assembleDebug --no-daemon
     
     - name: Upload APK
       if: success()
@@ -49,4 +49,3 @@ jobs:
       with:
         name: VoiceChatApp-debug
         path: app/build/outputs/apk/debug/app-debug.apk
-        retention-days: 30
