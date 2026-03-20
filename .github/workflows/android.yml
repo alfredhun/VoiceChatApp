@@ -33,15 +33,19 @@ jobs:
         yes | sdkmanager --licenses > /dev/null 2>&1
         sdkmanager "platforms;android-34" "build-tools;34.0.0"
         echo "sdk.dir=$ANDROID_HOME" > $GITHUB_WORKSPACE/local.properties
-        echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-        echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-        echo "JAVA_HOME=${{ steps.jdk.outputs.path }}" >> $GITHUB_ENV
-        cat $GITHUB_ENV
+    
+    - name: Setup Gradle 8.5
+      uses: gradle/gradle-setup-action@v3
+      with:
+        gradle-version: 8.5
     
     - name: Build with Gradle
       run: |
-        source $GITHUB_ENV
-        gradle assembleDebug --no-daemon
+        export JAVA_HOME="${{ steps.jdk.outputs.path }}"
+        ./gradlew assembleDebug --no-daemon
+      env:
+        ANDROID_HOME: /opt/android-sdk
+        ANDROID_SDK_ROOT: /opt/android-sdk
     
     - name: Upload APK
       if: success()
