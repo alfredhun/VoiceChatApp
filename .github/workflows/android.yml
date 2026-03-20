@@ -31,18 +31,13 @@ jobs:
         export ANDROID_HOME=$ANDROID_SDK_ROOT
         export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
         yes | sdkmanager --licenses > /dev/null 2>&1
-        sdkmanager "platforms;android-34" "build-tools;34.0.0"
+        sdkmanager "platforms;android-35" "build-tools;35.0.0"
         echo "sdk.dir=$ANDROID_HOME" > $GITHUB_WORKSPACE/local.properties
-    
-    - name: Setup Gradle 8.5
-      uses: gradle/gradle-setup-action@v3
-      with:
-        gradle-version: 8.5
     
     - name: Build with Gradle
       run: |
         export JAVA_HOME="${{ steps.jdk.outputs.path }}"
-        ./gradlew assembleDebug --no-daemon
+        gradle assembleDebug --no-daemon
       env:
         ANDROID_HOME: /opt/android-sdk
         ANDROID_SDK_ROOT: /opt/android-sdk
