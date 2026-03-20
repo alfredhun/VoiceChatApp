@@ -20,19 +20,28 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: 'gradle'
     
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      run: |
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        cd $HOME/android-sdk/cmdline-tools
+        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
+        unzip -q cmdline-tools.zip
+        mv cmdline-tools latest
+        export ANDROID_HOME=$HOME/android-sdk
+        export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+        yes | sdkmanager --licenses
+        sdkmanager "platforms;android-34" "build-tools;34.0.0"
     
     - name: Create local.properties
-      run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+      run: echo "sdk.dir=$HOME/android-sdk" > local.properties
     
     - name: Build with Gradle
       run: gradle assembleDebug --no-daemon
       env:
-        ANDROID_HOME: /usr/local/lib/android/sdk
-        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+        ANDROID_HOME: $HOME/android-sdk
+        ANDROID_SDK_ROOT: $HOME/android-sdk
+        JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.9-9/x64
     
     - name: Upload APK
       if: success()
