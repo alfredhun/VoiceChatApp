@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio
+*.iml
+.idea/
+local.properties
+
+# Build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Debug
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Release
+*.jks
+*.keystore
+*.hprof
+
+# Local config (contains API keys - DO NOT commit!)
+local.properties
+secrets.properties
+api_keys.properties
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db
